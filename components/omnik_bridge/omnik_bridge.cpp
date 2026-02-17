@@ -16,6 +16,11 @@ void OmnikBridge::setup() {
            this->ap_ssid_.c_str(), this->ap_ip_.toString().c_str(),
            this->port_, this->ap_channel_);
   this->server_ = new WiFiServer(this->port_);
+
+  // We start without any sensor values and wait for a message to arrive
+  // if not within connection tieout after the reboot, we will initialize the values with defaults
+  this->last_message_time_ = millis() - (AVAILABILITY_TIMEOUT_MS - CONNECTED_TIMEOUT_MS);  
+  this->sensors_available_ = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -227,27 +232,18 @@ void OmnikBridge::mark_unavailable_() {
   if (this->temperature_ != nullptr)
     this->temperature_->publish_state(NAN);
   if (this->power_ != nullptr)
-    this->power_->publish_state(NAN);
+    this->power_->publish_state(0.0f);
   if (this->ac_frequency_ != nullptr)
-    this->ac_frequency_->publish_state(NAN);
+    this->ac_frequency_->publish_state(0.0f);
   if (this->ac_voltage_ != nullptr)
-    this->ac_voltage_->publish_state(NAN);
-  if (this->energy_today_ != nullptr)
-    this->energy_today_->publish_state(NAN);
-  if (this->energy_total_ != nullptr)
-    this->energy_total_->publish_state(NAN);
-  if (this->operating_hours_ != nullptr)
-    this->operating_hours_->publish_state(NAN);
+    this->ac_voltage_->publish_state(0.0f);
   if (this->voltage_pv1_ != nullptr)
-    this->voltage_pv1_->publish_state(NAN);
+    this->voltage_pv1_->publish_state(0.0f);
   if (this->current_pv1_ != nullptr)
-    this->current_pv1_->publish_state(NAN);
+    this->current_pv1_->publish_state(0.0f);
   if (this->current_ac1_ != nullptr)
-    this->current_ac1_->publish_state(NAN);
-  if (this->logger_id_ != nullptr)
-    this->logger_id_->publish_state("");
-  if (this->inverter_id_ != nullptr)
-    this->inverter_id_->publish_state("");
+    this->current_ac1_->publish_state(0.0f);
+
   ESP_LOGI(TAG, "No data for 30 minutes, measurement sensors marked unavailable");
 }
 
